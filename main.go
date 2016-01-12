@@ -12,14 +12,12 @@ import (
 )
 
 func main() {
-	prefix := "business"
+	var prefix string
+
 	mysqlDSN := "root:root@tcp(127.0.0.1:3306)/mysql"
 	statsdURL := "127.0.0.1:8125"
-	query := ""
 
 	flag.StringVar(&prefix, "prefix", "", "prefix to send to statsd, usually server hostname")
-	flag.StringVar(&mysqlDSN, "mysql", "root:root@tcp(127.0.0.1:3306)/mysql", "mysql to connect to")
-	flag.StringVar(&statsdURL, "statsd", "127.0.0.1:8125", "statsd to send metric to")
 	flag.Parse()
 
 	if flag.NArg() < 2 {
@@ -29,7 +27,15 @@ func main() {
 		os.Exit(0)
 	}
 
-	query = flag.Arg(0)
+	if os.Getenv("MYSQL_DSN") != "" {
+		mysqlDSN = os.Getenv("MYSQL_DSN")
+	}
+
+	if os.Getenv("STATSD_URL") != "" {
+		statsdURL = os.Getenv("STATSD_URL")
+	}
+
+	query := flag.Arg(0)
 	metricName := flag.Arg(1)
 
 	db, err := sql.Open("mysql", mysqlDSN)
